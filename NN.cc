@@ -23,7 +23,7 @@ int main() {
    */
     
     
-    int number_of_images = 10000;
+    int number_of_images = 1000;
     
     
 ///////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ int main() {
     //numero de neuronas en la capa oculta
     int neurons_number = 40;
     
-    mat read = randu<mat>(784*10000);
+    mat read = randu<mat>(784*1000);
 
     //pic.reshape(28,28);
     //cout << pic <<endl;
@@ -153,8 +153,8 @@ float alpha = 0.01f;
       //mat A_prima = A.*(1 .- A);
       
       
-      mat H_prima = H*(1 -H).t();
-      mat A_prima = A*(1- A).t();
+      mat H_prima = H%(1 - H);
+      mat A_prima = A%(1 - A);
       
      
      ////ACTUALIZACION DE LOS PESOS 
@@ -164,14 +164,14 @@ float alpha = 0.01f;
       //mat D3 = (H - Y).*H_prima;
      
       //test armadillo
-      mat D3 = (H - Y)*H_prima.t();
+      mat D3 = (H - Y)%H_prima;
       
       
       //para nuestra capa intermedia D2 como el delta de la capa intermedia
       //D2 = (D3*weigth_2).*A_prima;
       
       //test armadillo
-      mat D2 = (D3*weigth_2)*A_prima.t();
+      mat D2 = (D3*weigth_2)%A_prima;
       
       
       //en esta operacion kedan todos los valores con los cuales debemos actualizar nuestros pesos.
@@ -183,7 +183,7 @@ float alpha = 0.01f;
       //Dw1 = X.t()*D2(:,2:neurons_number+1);
       
        //test armadillo
-      mat Dw1 =  X.t()*D2.t();
+      mat Dw1 =  X.t()*D2;
       
       
 //restamos la matriz de los pesos actuales con el valor de cambio q esta guardado en la matriz y asi obtener los valores deseados de los pesos despues e nuestro entrenamiento
@@ -193,9 +193,9 @@ float alpha = 0.01f;
       
       
        //test armadillo
-      weigth = weigth - (alpha/number_of_images)*Dw1.t();
+     //weigth = weigth - (alpha/number_of_images)%Dw1.t();
 
-      weigth_2 = weigth_2 - (alpha/number_of_images)*Dw2;
+     // weigth_2 = weigth_2 - (alpha/number_of_images)%Dw2;
     
     
       
@@ -203,14 +203,15 @@ float alpha = 0.01f;
       //J_t = (1/number_of_images)*((Y-H).^2);
       
       //test armadillo
-      mat J_t = (1/number_of_images)*((Y-H));
+      mat J_t = (1/number_of_images)*(pow((Y-H), 2));
      
      
       //sea agregan los valores calculados a  una matriz para luego graficarlos
       //J_theta = [J_theta;sum(J_t)];
       
       //test armadillo
-      J_theta = join_horiz(J_theta,sum(J_t));
+      
+      //J_theta = join_horiz(J_theta,sum(J_t));
       
       
         
