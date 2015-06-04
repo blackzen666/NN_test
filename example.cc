@@ -4,7 +4,12 @@
 using namespace std;
 using namespace arma;
 
-int main(int argc, char** argv) {
+mat sigmoid(mat A) {
+  return 1 / (1 + exp(-A));
+}
+
+
+int main() {
 
   /*mat pic = randu<mat>(756);
 
@@ -17,11 +22,13 @@ int main(int argc, char** argv) {
 
   cout << A*B.t() << endl;
 */
-  vec A = ones<vec>(10);
+  mat A = randu<mat>(5,5) * 100;
   A.print("A:");
-  double b,c,d,e;
-  b = sum(A * 2);
-  c = accu(A * 3);
-  cout<<b<<" "<<c<<endl;
+  rowvec B = max(A);
+  B.print("B:");
+  A.each_row() /= B;
+  A.print("C:");
+  mat C = sigmoid(A);
+  C.print("D:");
   return 0;
-  }
+}
