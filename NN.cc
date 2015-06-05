@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <armadillo>
+#include <vector>
 using namespace std;
 using namespace arma;
 
@@ -8,32 +9,81 @@ mat sigmoid(mat A) {
   return 1 / (1 + exp(-A));
 }
 
-mat forward(mat In, mat W1, mat W2) {
-  mat A = sigmoid(In * W1);
-  mat out = sigmoid(A * W2);
-  return out;
+vector<mat> forward(mat In, mat W1, mat W2) {
+  mat A = sigmoid(In * W1.t());
+  mat out = sigmoid(A* W2.t());
+
+  vector<mat> results;
+
+  results.push_back(A);
+  results.push_back(out);
+
+  cout<<"In: " <<size(In)<< endl;
+  cout<<"W1: " <<size(W1)<< endl;
+  cout<<"A: " <<size(A)<< endl;
+  cout<<"W2: " <<size(W2)<< endl;
+  cout<<"out: " <<size(out)<< endl;
+  return results;
 }
+
+
+mat back_propagation(mat X, mat A,mat H,mat Y,mat weigth,mat weigth_2,int number_of_images) {
+  vec J_theta = zeros<mat>(10);
+  //valor del salto en j_theta
+  float alpha = 0.01f;
+
+  mat H_prima = H%(1 - H);
+  mat A_prima = A%(1 - A);
+
+  mat D3 = (H - Y)%H_prima;
+
+  mat D2 = (D3*weigth_2)%A_prima;
+
+  mat Dw2 =  D3.t()*A;
+
+  mat Dw1 =  X.t()*D2;
+
+  weigth = weigth - (alpha/number_of_images)*Dw1.t();
+
+  weigth_2 = weigth_2 - (alpha/number_of_images)*Dw2;
+
+  mat J_t = (1/number_of_images)*(pow((Y-H), 2));
+
+
+  //sea agregan los valores calculados a  una matriz para luego graficarlos
+  //esto es un .push_back() en matlab
+  //J_theta = [J_theta;sum(J_t)];
+
+  //J_theta = join_horiz(J_theta,sum(J_t));
+
+
+  cout<<"H_prima: " <<size(H_prima)<< endl;
+  cout<<"A_prima: "<< size(A_prima)<< endl;
+
+  cout<<"D3: "<< size(D3)<< endl;
+  cout<<"D2: "<< size(D2)<< endl;
+
+  cout<<"Dw2: "<< size(Dw2)<< endl;
+  cout<<"Dw1: "<< size(Dw1)<< endl;
+
+
+  cout<<"weigths1: "<< size(weigth)<< endl;
+  cout<<"weigths2: "<< size(weigth_2)<< endl;
+
+
+  cout<<"J_t: "<< size(J_t)<< endl;
+
+  //return weigth,weigth_2;
+  return J_t;
+}
+
+
 
 
 int main() {
 
-  /////////////////////////LECTURA DE ARCHIVO /////////////////////////////
-  /*unsigned char cadena;
-    ifstream fe("60klabels");
 
-    int counter = 0;
-
-    while(!fe.eof()) {
-    fe >> cadena;
-    cout << (int)cadena<<" ";
-    counter++;
-    }
-    fe.close();
-    cout <<"counter : "<< counter << endl;
-    */
   int number_of_images = 10000;
-  ///////////////////////////////////////////////////////////////////////////
-
 
   ////////////////////////////////////OPERACION DE LABELS ///////////////////////
 
@@ -42,7 +92,6 @@ int main() {
   //cout << Y << endl;
 
   /*// CONVERSION DE LABELS PARA PODERLOS EVALUAR LOS VALORES DE SALIDA PARA CADA FOTO
-
 
     for m = 1:number_of_images2
     Y(m,labels(m)+1) =1;
@@ -70,7 +119,6 @@ int main() {
   //mat X = read.reshape(number_of_images,784);
   mat X = zeros<mat>(number_of_images,784);
 
-
   //agregando el termino bias a nuestras caracteristicas
   mat bias =  ones<mat>(number_of_images,1);
   X = join_horiz(bias,X);
@@ -84,7 +132,6 @@ int main() {
   //pesos 2
   mat weigth_2 = randn<mat>(10,neurons_number);
 
-
   cout <<size(read)<< endl;
   cout <<size(X) <<endl;
   cout <<size(Y)<< endl;
@@ -97,20 +144,11 @@ int main() {
   /////--------------------------------------------------------------------------------------------
   //FORWARD PROPAGATION
 
-  //valor del salto en j_theta
-  float alpha = 0.01f;
 
-  vec J_theta = zeros<mat>(10);
 
 
   //ESTE FOR ES PARA HACER BACK Y FORWARD PROPAGATION graficas resultantes quedan en termino sde j_thera y iteraciones.
   for (int i = 0; i < 200; ++i) {
-
-    //haciendo las sumatorias (Xi*Wi)
-    mat A = X*weigth.t();
-
-    //evaluando todos los valores de la matriz por la funcion H
-    mat temp = 1./(1+exp(-A));
 
     ///NO ME ACUERDO SI ES NECESARIO EL TEMRINO BIAS EN LAS NEURONAS DE LA MITAD.
     /* #se crea un vector de 1
@@ -118,101 +156,20 @@ int main() {
 #y se agrega a la matriz para representar el bias term.
 A = [matriz_A,A];
 */
-    //calculando los valores de salida de la primera capa con los pesos
-    mat A_resultado = weigth_2*temp.t();
 
+    vector<mat> results =  forward(X, weigth, weigth_2);
+    mat A = results[0];
+    mat H = results[1];
 
-    //evaluando los valores de la matriz por la funcion
-    mat H = (1./(1+exp(-A_resultado))).t();
-
-    cout<<"A: " <<size(A)<< endl;
-    cout<<"temp:" << size(temp) << endl;
-    cout<<"A_r: "<< size(A_resultado)<< endl;
-    cout<<"H: "<< size(H)<< endl;
 
     //----------------------------------------------------------------------
     //////BACK PROPAGATION./////
 
-    ///calculando derivada de funcion sigmuidal F(x)*(1-F(x))
 
-    /////NO ES UNA MULTIPLICACION SINO OPERACION ELEMENTO A ELEMENTO
-    ///ESTO DEBERIA DE SER UN ELEMENT WISE.
 
-    //!!OJO OJO OJO OJO
-    //!!!OJO OJO OJO OJO
-    //!!!!!!!!!!!!!!!!
+    back_propagation(X,A,H,Y,weigth,weigth_2,number_of_images);
 
-    //##calculandola derivda evaluando todos los valores de nuestram atriz en lapunion F(x)*(1-F(x))
-    //mat H_prima = H.*(1 .- H);
-    //mat A_prima = A.*(1 .- A);
 
-    mat H_prima = H%(1 - H);
-    mat A_prima = A%(1 - A);
-
-    cout<<"H_prima: " <<size(H_prima)<< endl;
-    cout<<"A_prima: "<< size(A_prima)<< endl;
-    ////ACTUALIZACION DE LOS PESOS
-
-    //para la capa de salida se tiene D3 como el delta de la capa de salida
-    //mat D3 = (H - Y).*H_prima;
-
-    //test armadillo
-    mat D3 = (H - Y)%H_prima;
-    cout<<"D3: "<< size(D3)<< endl;
-
-    //para nuestra capa intermedia D2 como el delta de la capa intermedia
-    //D2 = (D3*weigth_2).*A_prima;
-
-    //test armadillo
-    mat D2 = (D3*weigth_2)%A_prima;
-
-    cout<<"D2: "<< size(D2)<< endl;
-
-    //en esta operacion kedan todos los valores con los cuales debemos actualizar nuestros pesos.
-    //para la capa intermedia
-    mat Dw2 =  D3.t()*A;
-    cout<<"Dw2: "<< size(Dw2)<< endl;
-
-    //para la capa de entrada
-    //escojer desde el 2 hacia arriba o quitarle una columna
-    //Dw1 = X.t()*D2(:,2:neurons_number+1);
-
-    //test armadillo
-    mat Dw1 =  X.t()*D2;
-    cout<<"Dw1: "<< size(Dw1)<< endl;
-
-    //restamos la matriz de los pesos actuales con el valor de cambio q esta guardado en la matriz y asi obtener los valores deseados de los pesos despues e nuestro entrenamiento
-    //weigth = weigth - (alpha/number_of_images).*Dw1';
-
-    //weigth_2 = weigth_2 - (alpha/number_of_images).*Dw2;
-    //test armadillo
-    weigth = weigth - (alpha/number_of_images)*Dw1.t();
-
-    weigth_2 = weigth_2 - (alpha/number_of_images)*Dw2;
-
-    cout<<"weigths1: "<< size(weigth)<< endl;
-    cout<<"weigths2: "<< size(weigth_2)<< endl;
-
-    //la funcion J_theta para representar el error y la funcion de aprnedizaje.
-    //J_t = (1/number_of_images)*((Y-H).^2);
-
-    //test armadillo
-    mat J_t = (1/number_of_images)*(pow((Y-H), 2));
-    cout<<"J_t: "<< size(J_t)<< endl;
-
-    //sea agregan los valores calculados a  una matriz para luego graficarlos
-    //esto es un .push_back() en matlab
-    //J_theta = [J_theta;sum(J_t)];
-
-    //test armadillo
-
-    //no creo q esta sea la forma de agregar un valor a una
-    //matriz arriba esta creado de 10 pos por las neuronas
-    //de salida es necesario ese metodo sum para colapsar la matriz de 60k*10 y dejarla de 10 valores.
-    //J_theta = join_horiz(J_theta,sum(J_t));
-
-    //verificando las iteraciones y el tamanio el vector agregado.
-    //size(J_theta);
     cout <<i<<endl;
   }
 

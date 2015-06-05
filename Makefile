@@ -1,5 +1,9 @@
-mskall: NN
+CC = g++ -std=c++11 -larmadillo
+
+all: NN Experiment
 
 NN: NN.cc
-	g++ -std=c++11 refactored.cc -o NN.out -O2 -larmadillo
+	$(CC) NN.cc -o NN.out
 
+Experiment: experiment.cc
+	$(CC) experiment.cc -o experiment.out
