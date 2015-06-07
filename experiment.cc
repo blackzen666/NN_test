@@ -86,6 +86,8 @@ int main() {
 
 /// TRUE SI SON IMAGENES 
 // read_mnist_data(string path,bool train_images)
+//   http://www.codeproject.com/Questions/601150/HowplustoplusreadpluspixelsplusfromplusMNISTplusdi
+
 
   //read_mnist_data("t10k_unzip",false);
   read_mnist_data("t10k-images_unzip",true);
