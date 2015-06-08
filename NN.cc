@@ -14,10 +14,10 @@ vector<mat> forward(mat In, mat W1, mat W2) {
   mat A = sigmoid(In * W1.t());
   mat out = sigmoid(A* W2.t());
 
-  vector<mat> results;
+  vector<mat> results(2);
 
-  results.push_back(A);
-  results.push_back(out);
+  results[0] = A;
+  results[1] = out;
 
   cout<<"In: " <<size(In)<< endl;
   //cout<<"In: " <<In<< endl;
@@ -26,46 +26,44 @@ vector<mat> forward(mat In, mat W1, mat W2) {
   cout<<"A: " <<size(A)<< endl;
   //cout<<"A: " <<A<< endl;
   cout<<"W2: " <<size(W2)<< endl;
-   //cout<<"W2: " <<W2<< endl;
+  //cout<<"W2: " <<W2<< endl;
   cout<<"out: " <<size(out)<< endl;
   //cout<<"out: " <<out<< endl;
   return results;
 }
 
 
-mat back_propagation(mat X, mat A,mat H,mat Y,mat weigth,mat weigth_2,int number_of_images,mat J_theta) {
+mat back_propagation(mat X, mat A, mat H, mat Y, mat weigth, mat weigth_2, int number_of_images, mat J_theta) {
   //valor del salto en j_theta
   float alpha = 0.01f;
 
-  mat H_prima = H%(1 - H);
+  mat H_prima = H % (1 - H);
   ////cout <<H_prima<<endl;
-  mat A_prima = A%(1 - A);
+  mat A_prima = A % (1 - A);
   //cout <<A_prima<<endl;
-  mat D3 = (H - Y)%H_prima;
+  mat D3 = (H - Y) % H_prima;
   //cout <<D3<<endl;
-  mat D2 = (D3*weigth_2)%A_prima;
+  mat D2 = (D3 * weigth_2) % A_prima;
   //cout <<D2<<endl;
-  mat Dw2 =  D3.t()*A;
+  mat Dw2 =  D3.t() * A;
   //cout <<Dw2<<endl;
-  mat Dw1 =  X.t()*D2;
+  mat Dw1 =  X.t() * D2;
   //cout <<Dw1<<endl;
-  weigth = weigth - (alpha/number_of_images)*Dw1.t();
+  weigth = weigth - ( alpha / number_of_images) * Dw1.t();
 
-  weigth_2 = weigth_2 - (alpha/number_of_images)*Dw2;
+  weigth_2 = weigth_2 - (alpha / number_of_images) * Dw2;
 
 
-
-  //  esta linea esta creando puros zeros y la inicie en randoms yo creo q esta mala. 
-  mat J_t = (1/number_of_images)*(pow((Y-H), 2));
+  //  esta linea esta creando puros zeros y la inicie en randoms yo creo q esta mala
+  mat J_t = (1 / (double)number_of_images) * (pow( ( Y - H), 2));
   cout << J_t << endl;
 
   //sea agregan los valores calculados a  una matriz para luego graficarlos
   //esto es un .push_back() en matlab
   //J_theta = [J_theta;sum(J_t)];
   cout<< "error"<<sum(J_t)<<endl;
-  
-  J_theta = join_vert(J_theta,sum(J_t));
 
+  J_theta = join_vert(J_theta,sum(J_t));
 
   cout<<"H_prima: " <<size(H_prima)<< endl;
   cout<<"A_prima: "<< size(A_prima)<< endl;
@@ -82,7 +80,7 @@ mat back_propagation(mat X, mat A,mat H,mat Y,mat weigth,mat weigth_2,int number
 
 
   cout<<"J_t: "<< size(J_t)<< endl;
-  
+
   cout<<"J_t: "<< size(J_theta)<< endl;
   //return weigth,weigth_2;
   return J_theta;
@@ -176,11 +174,7 @@ A = [matriz_A,A];
     //----------------------------------------------------------------------
     //////BACK PROPAGATION./////
 
-
-  
-      
-   J_theta =back_propagation(X,A,H,Y,weigth,weigth_2,number_of_images,J_theta);
-
+    J_theta =back_propagation(X,A,H,Y,weigth,weigth_2,number_of_images,J_theta);
 
     cout <<i<<endl;
     cout <<J_theta<<endl;
