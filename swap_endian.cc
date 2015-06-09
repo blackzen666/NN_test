@@ -14,36 +14,19 @@ uchar reverse(uchar b) {
 
 int main(int argc, char **argv) {
   string Name_out(argv[1]);
-  Name_out += "_swapped_endianness";
+  //Name_out += "_swapped_endianness";
   ifstream in(argv[1], ios::binary);
-  ofstream out(Name_out.c_str(), ios::binary);
+  //ofstream out(Name_out.c_str(), ios::binary);
   uchar readed;
-
-  while(in >> readed)
-    out << reverse(readed);
-
+  int count = 0, maxi = 0;
+  while(in.read((char *)&readed, sizeof(char))) {
+    //printf("%d\n", (int)readed);
+    maxi = max((int)readed, maxi);
+    //out << reverse(readed);
+    count++;
+  }
+  cout<<maxi<<endl;
+  cout<<count<<endl;
   in.close();
-  out.close();
-  /*
-  in >> magic;// >> items;
-
-  for(int i = 0; i < 4; i++) {
-    for(int j = 0; j < 8; j++) {
-      if(magic[i] & 1 << j) cout<<"1";
-      else cout<<"0";
-    }
-    cout<< " ";
-  }
-  cout<<endl;
-
-  for(int i = 0; i < 4; i++) {
-    for(int j = 0; j < 8; j++) {
-      if(reverse(magic[i]) & 1 << j) cout<<"1";
-      else cout<<"0";
-    }
-    cout<< " ";
-  }
-  cout<<endl;
-  */
   return 0;
 }
