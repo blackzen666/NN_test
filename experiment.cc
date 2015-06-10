@@ -27,6 +27,8 @@ int reverseInt (int i) {
 
 void read_mnist_data(string path,bool train_images) {
   // ifstream file ("t10k-images_unzip");
+  
+
   ifstream file (path);
   if (file.is_open()) {
     int magic_number=0;
@@ -54,18 +56,34 @@ void read_mnist_data(string path,bool train_images) {
 
     unsigned char  cadena;
 
+////matriz definition because of element read
+    mat data = zeros<mat>(number_of_images,1);
+
     while(!file.eof()) {
 
-      file.read((char*)&cadena,sizeof(char*));
+      file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
-      std::cout << pixel << endl;
-
+      
+      if(counter < number_of_images - 1){
+      		//std::cout << pixel << endl;
+      		data(counter,0)= pixel;
+      		cout<< data(counter,0) <<endl;
+      	}
       counter++;
     }
-
+    cout <<data(0,0)<<endl;
+    cout <<data(1,0)<<endl;
+    cout <<data(2,0)<<endl;
+    cout <<data(3,0)<<endl;
+    cout <<size(data)<<endl;
+    if(train_images == true)
+    	{
+    		data.reshape(n_cols*n_rows, number_of_images);
+    		cout << size(data)<<endl;
+    	}
+    	
     cout <<"read counter: "<<counter <<endl;
-
-  }
+	}
 }
 
 
@@ -86,7 +104,8 @@ int main() {
 
 
   //read_mnist_data("t10k_unzip",false);
-  read_mnist_data("t10k-images_unzip",true);
+  read_mnist_data("dataset/t10k-images",true);
+  read_mnist_data("dataset/t10k-labels",false);
 
   /*
      mat A = randu<mat>(5,5) * 100;
