@@ -46,8 +46,8 @@ mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2,
   mat Dw2 =  D3.t() * A;
   mat Dw1 =  X.t() * D2;
 
-  weigth = weigth -  alpha * Dw1.t();
-  weigth_2 = weigth_2 - alpha * Dw2;
+  weigth = weigth -  (alpha/number_of_images) * Dw1.t();
+  weigth_2 = weigth_2 - (alpha/number_of_images) * Dw2;
 
   mat J_t = (1 / (double)number_of_images) * (pow( ( Y - H), 2));
   J_theta = sum(sum(J_t));
@@ -91,11 +91,10 @@ int read_MNIST_labels(mat &data) {
     ////matriz definition because of element read
     data = zeros<mat>(number_of_images,10);
 
-    while(!file.eof()) {
+    for(int counter =0 ; counter < number_of_images ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
-
       if(counter < number_of_images - 1){
         //std::cout << pixel << endl;
         data(counter,pixel)= 1;
@@ -108,8 +107,6 @@ int read_MNIST_labels(mat &data) {
       cout <<data(2,0)<<endl;
       cout <<data(3,0)<<endl;
       cout <<size(data)<<endl;*/
-
-
     //cout <<"read counter: "<<counter <<endl;
   }
   return num_data;
@@ -151,7 +148,7 @@ int read_MNIST_images(mat &data) {
     ////matriz definition because of element read
     data = zeros<mat>(num_data, 1);
 
-    while(!file.eof()) {
+    for(int counter =0 ; counter < number_of_images ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
@@ -170,7 +167,6 @@ int read_MNIST_images(mat &data) {
     mat bias = ones<mat>(number_of_images,1);
     data = join_horiz(data,bias);
     //cout << size(data) <<endl;
-
     //cout <<"read counter: "<<counter <<endl;
   }
   return num_data;
@@ -214,8 +210,10 @@ int main() {
     mat H = results[1];
     J_theta = back_propagation(X, A, H, Y, weigth, weigth_2, number_of_images, J_theta);
     cout << i << endl;
+    cout << sum (J_theta) << endl;
   }
   return 0;
+
   cout << "INPUT TEST" << endl;
 
   mat test_input;
@@ -234,5 +232,7 @@ int main() {
   mat tmp = salida[1].transform([](double val){ if(val < 0.5) return 0; else return 1;});
   int errors = check_res(tmp, test_outputs);
   cout<<"errors: "<< errors<<endl;
+  //cout << salida[1] <<endl;
+
   return 0;
 }
