@@ -39,7 +39,7 @@ vector<mat> forward(mat &In, mat &W1, mat &W2) {
 }
 
 mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2, int number_of_images, mat J_theta) {
-  float alpha = 0.6f;
+  float alpha = 0.01f;
 
   mat H_prima = H % (1 - H);
   mat A_prima = A % (1 - A);
@@ -48,8 +48,8 @@ mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2,
   mat Dw2 =  D3.t() * A;
   mat Dw1 =  X.t() * D2;
 
-  weigth = weigth -  alpha * Dw1.t();
-  weigth_2 = weigth_2 - alpha * Dw2;
+  weigth = weigth -  (alpha/number_of_images) * Dw1.t();
+  weigth_2 = weigth_2 - (alpha/number_of_images) * Dw2;
 
   mat J_t = (1 / (double)number_of_images) * (pow( ( Y - H), 2));
   J_theta = join_vert(J_theta,sum(J_t));
@@ -86,23 +86,21 @@ int read_MNIST_labels(mat &data) {
 ////matriz definition because of element read
     data = zeros<mat>(number_of_images,10);
 
-    while(!file.eof()) {
+    for(int counter =0 ; counter < number_of_images ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
-      
-      if(counter < number_of_images - 1){
+
           //std::cout << pixel << endl;
           data(counter,pixel)= 1;
-          //cout<< data(counter,0) <<endl;
-        }
+          cout<< data(counter,0) <<endl;
       counter++;
     }
     /*cout <<data(0,0)<<endl;
     cout <<data(1,0)<<endl;
     cout <<data(2,0)<<endl;
-    cout <<data(3,0)<<endl;
-    cout <<size(data)<<endl;*/
+    cout <<data(3,0)<<endl;*/
+    cout <<data<<endl;
 
       
     cout <<"read counter: "<<counter <<endl;
@@ -143,23 +141,23 @@ int read_MNIST_images(mat &data) {
 ////matriz definition because of element read
     data = zeros<mat>(number_of_images,1);
 
-    while(!file.eof()) {
+    for(int counter =0 ; counter < number_of_images ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
       
-      if(counter < number_of_images - 1){
           //std::cout << pixel << endl;
           data(counter,0)= pixel;
-          //cout<< data(counter,0) <<endl;
-        }
-      counter++;
+          cout<< data(counter,0) <<endl;
+
     }
     
-    data.reshape(number_of_images,n_cols*n_rows);
-    mat bias = ones<mat>(number_of_images,1);
-    data = join_horiz(data,bias);
-    cout << size(data) <<endl;
+    data.reshape(n_cols*n_rows,number_of_images);
+    mat bias = ones<mat>(1,number_of_images);
+    data = join_vert(data,bias);
+    //cout << size(data) <<endl;
+    data.t();
+    data.print();
 
       
     cout <<"read counter: "<<counter <<endl;
@@ -169,7 +167,7 @@ int read_MNIST_images(mat &data) {
 
 
 int main() {
-  int neurons_number = 20, max_iter = 100;
+  int neurons_number = 20, max_iter = 10;
   arma_rng::set_seed_random();
   mat Y;
   mat X;
@@ -193,7 +191,9 @@ int main() {
     mat H = results[1];
     J_theta = back_propagation(X, A, H, Y, weigth, weigth_2, number_of_images, J_theta);
     cout << i << endl;
+    cout << sum (J_theta) << endl;
   }
+
 
   cout << "INPUT TEST" << endl;
 
@@ -209,6 +209,8 @@ int main() {
   //cout << test_input << endl;
 
   vector<mat> salida = forward(test_input, weigth, weigth_2);
-  cout << salida[1] <<endl;
+  //cout << salida[1] <<endl;
+
+
   return 0;
 }
