@@ -8,6 +8,21 @@
 using namespace std;
 using namespace arma;
 
+
+int reverseInt (int i) {
+  unsigned char c1, c2, c3, c4;
+
+  c1 = i & 255;
+  c2 = (i >> 8) & 255;
+  c3 = (i >> 16) & 255;
+  c4 = (i >> 24) & 255;
+
+  return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
+}
+
+
+
+
 mat sigmoid(mat A) {
   return 1 / (1 + exp(-A));
 }
@@ -42,15 +57,124 @@ mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2,
   return J_theta;
 }
 
-int read_MNIST_labels(mat &A);
-int read_MNIST_images(mat &A);
+
+
+
+int read_MNIST_labels(mat &data) {
+  // ifstream file ("t10k-images_unzip");
+  
+
+  ifstream file ("dataset/t10k-labels");
+  int num_data;
+  if (file.is_open()) {
+    int magic_number=0;
+    int number_of_images=0;
+    int n_rows=0;
+    int n_cols=0;
+    file.read((char*)&magic_number,sizeof(magic_number));
+    magic_number= reverseInt(magic_number);
+    cout << magic_number <<endl;
+    file.read((char*)&number_of_images,sizeof(number_of_images));
+    number_of_images= reverseInt(number_of_images);
+    cout << number_of_images <<endl;
+    num_data = number_of_images;
+
+    int counter = 0;
+
+    unsigned char  cadena;
+
+////matriz definition because of element read
+    data = zeros<mat>(number_of_images,10);
+
+    while(!file.eof()) {
+
+      file.read((char*)&cadena,sizeof(char));
+      int pixel= cadena;
+      
+      if(counter < number_of_images - 1){
+          //std::cout << pixel << endl;
+          data(counter,pixel)= 1;
+          //cout<< data(counter,0) <<endl;
+        }
+      counter++;
+    }
+    /*cout <<data(0,0)<<endl;
+    cout <<data(1,0)<<endl;
+    cout <<data(2,0)<<endl;
+    cout <<data(3,0)<<endl;
+    cout <<size(data)<<endl;*/
+
+      
+    cout <<"read counter: "<<counter <<endl;
+  }
+  return num_data;
+}
+
+
+int read_MNIST_images(mat &data) {
+  // ifstream file ();
+  int num_data;
+
+  ifstream file ("dataset/t10k-images");
+  if (file.is_open()) {
+    int magic_number=0;
+    int number_of_images=0;
+    int n_rows=0;
+    int n_cols=0;
+    file.read((char*)&magic_number,sizeof(magic_number));
+    magic_number= reverseInt(magic_number);
+    cout << magic_number <<endl;
+    file.read((char*)&number_of_images,sizeof(number_of_images));
+    number_of_images= reverseInt(number_of_images);
+    cout << number_of_images <<endl;
+    file.read((char*)&n_rows,sizeof(n_rows));
+    n_rows= reverseInt(n_rows);
+    cout << n_rows <<endl;
+    file.read((char*)&n_cols,sizeof(n_cols));
+    n_cols= reverseInt(n_cols);
+    cout <<n_cols <<endl;
+
+    num_data= number_of_images;
+
+    int counter = 0;
+
+    unsigned char  cadena;
+
+////matriz definition because of element read
+    data = zeros<mat>(number_of_images,1);
+
+    while(!file.eof()) {
+
+      file.read((char*)&cadena,sizeof(char));
+      int pixel= cadena;
+      
+      if(counter < number_of_images - 1){
+          //std::cout << pixel << endl;
+          data(counter,0)= pixel;
+          //cout<< data(counter,0) <<endl;
+        }
+      counter++;
+    }
+    
+    data.reshape(number_of_images,n_cols*n_rows);
+    mat bias = ones<mat>(number_of_images,1);
+    data = join_horiz(data,bias);
+    cout << size(data) <<endl;
+
+      
+    cout <<"read counter: "<<counter <<endl;
+  }
+  return num_data;
+}
 
 
 int main() {
-  int neurons_number = 20, max_iter = 60000;
+  int neurons_number = 20, max_iter = 100;
   arma_rng::set_seed_random();
   mat Y;
   mat X;
+
+  int number_of_labels = read_MNIST_labels(Y);  
 
   int number_of_images = read_MNIST_images(X);
   int outputs_number = 10;
@@ -58,7 +182,7 @@ int main() {
   // mat bias =  ones<mat>(number_of_images,1);
   //X = join_horiz(bias,X);
 
-  mat weigth = randn<mat>(neurons_number, characteristics);
+  mat weigth = randn<mat>(neurons_number, characteristics+1);
 
   mat weigth_2 = randn<mat>(outputs_number , neurons_number);
 
@@ -68,6 +192,7 @@ int main() {
     mat A = results[0];
     mat H = results[1];
     J_theta = back_propagation(X, A, H, Y, weigth, weigth_2, number_of_images, J_theta);
+    cout << i << endl;
   }
 
   cout << "INPUT TEST" << endl;
