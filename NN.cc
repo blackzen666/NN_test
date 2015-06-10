@@ -8,7 +8,6 @@
 using namespace std;
 using namespace arma;
 
-
 int reverseInt (int i) {
   unsigned char c1, c2, c3, c4;
 
@@ -19,9 +18,6 @@ int reverseInt (int i) {
 
   return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
 }
-
-
-
 
 mat sigmoid(mat A) {
   return 1 / (1 + exp(-A));
@@ -38,8 +34,10 @@ vector<mat> forward(mat &In, mat &W1, mat &W2) {
   return results;
 }
 
+double alpha = 0.08;
+double error = 100;
+
 mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2, int number_of_images, mat J_theta) {
-  float alpha = 0.6f;
 
   mat H_prima = H % (1 - H);
   mat A_prima = A % (1 - A);
@@ -52,8 +50,14 @@ mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2,
   weigth_2 = weigth_2 - alpha * Dw2;
 
   mat J_t = (1 / (double)number_of_images) * (pow( ( Y - H), 2));
-  J_theta = join_vert(J_theta,sum(J_t));
-
+  J_theta = sum(sum(J_t));
+  double t_error = J_theta(0,0);
+  if(t_error >= error)
+    alpha /= 3;
+  if(t_error - error <= 0.00001)
+    alpha *= 2;
+  error = t_error;
+  cout << error <<" "<<alpha <<endl;
   return J_theta;
 }
 
@@ -62,7 +66,6 @@ mat back_propagation(mat &X, mat &A, mat &H, mat &Y, mat &weigth, mat &weigth_2,
 
 int read_MNIST_labels(mat &data) {
   // ifstream file ("t10k-images_unzip");
-  
 
   ifstream file ("dataset/t10k-labels");
   int num_data;
@@ -73,39 +76,41 @@ int read_MNIST_labels(mat &data) {
     int n_cols=0;
     file.read((char*)&magic_number,sizeof(magic_number));
     magic_number= reverseInt(magic_number);
-    cout << magic_number <<endl;
+    //cout << magic_number <<endl;
+
     file.read((char*)&number_of_images,sizeof(number_of_images));
     number_of_images= reverseInt(number_of_images);
-    cout << number_of_images <<endl;
+    //cout << number_of_images <<endl;
+
     num_data = number_of_images;
 
     int counter = 0;
 
     unsigned char  cadena;
 
-////matriz definition because of element read
+    ////matriz definition because of element read
     data = zeros<mat>(number_of_images,10);
 
     while(!file.eof()) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
-      
+
       if(counter < number_of_images - 1){
-          //std::cout << pixel << endl;
-          data(counter,pixel)= 1;
-          //cout<< data(counter,0) <<endl;
-        }
+        //std::cout << pixel << endl;
+        data(counter,pixel)= 1;
+        //cout<< data(counter,0) <<endl;
+      }
       counter++;
     }
     /*cout <<data(0,0)<<endl;
-    cout <<data(1,0)<<endl;
-    cout <<data(2,0)<<endl;
-    cout <<data(3,0)<<endl;
-    cout <<size(data)<<endl;*/
+      cout <<data(1,0)<<endl;
+      cout <<data(2,0)<<endl;
+      cout <<data(3,0)<<endl;
+      cout <<size(data)<<endl;*/
 
-      
-    cout <<"read counter: "<<counter <<endl;
+
+    //cout <<"read counter: "<<counter <<endl;
   }
   return num_data;
 }
@@ -124,57 +129,73 @@ int read_MNIST_images(mat &data) {
     file.read((char*)&magic_number,sizeof(magic_number));
     magic_number= reverseInt(magic_number);
     cout << magic_number <<endl;
+
     file.read((char*)&number_of_images,sizeof(number_of_images));
     number_of_images= reverseInt(number_of_images);
     cout << number_of_images <<endl;
+
     file.read((char*)&n_rows,sizeof(n_rows));
     n_rows= reverseInt(n_rows);
     cout << n_rows <<endl;
+
     file.read((char*)&n_cols,sizeof(n_cols));
     n_cols= reverseInt(n_cols);
     cout <<n_cols <<endl;
 
-    num_data= number_of_images;
+    num_data= number_of_images * n_rows * n_cols;
 
     int counter = 0;
 
     unsigned char  cadena;
 
-////matriz definition because of element read
-    data = zeros<mat>(number_of_images,1);
+    ////matriz definition because of element read
+    data = zeros<mat>(num_data, 1);
 
     while(!file.eof()) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
-      
+
       if(counter < number_of_images - 1){
-          //std::cout << pixel << endl;
-          data(counter,0)= pixel;
-          //cout<< data(counter,0) <<endl;
-        }
+        data(counter,0)= ((double)pixel)/255.0;
+      }
       counter++;
     }
-    
     data.reshape(number_of_images,n_cols*n_rows);
+    mat tmp = data.row(0);
+    cout<<"sized "<<size(data.row(0))<<endl;
+    tmp.reshape(n_rows, n_cols);
+    cout<<"sizet "<<size(tmp)<<endl;
+    tmp.save("tmp.mio", arma_ascii);
     mat bias = ones<mat>(number_of_images,1);
     data = join_horiz(data,bias);
-    cout << size(data) <<endl;
+    //cout << size(data) <<endl;
 
-      
-    cout <<"read counter: "<<counter <<endl;
+    //cout <<"read counter: "<<counter <<endl;
   }
   return num_data;
 }
 
+int check_res(mat &A, mat &B) {
+  int err = 0;
+  for(int i = 0; i < A.n_rows; i++) {
+    for(int j = 0; j < A.n_cols; i++) {
+      if(A(i,j) != B(i,j)) {
+        err++;
+        break;
+      }
+    }
+  }
+  return err;
+}
 
 int main() {
-  int neurons_number = 20, max_iter = 100;
+  int neurons_number = 20, max_iter = 1;
   arma_rng::set_seed_random();
   mat Y;
   mat X;
-
-  int number_of_labels = read_MNIST_labels(Y);  
+  cin >> alpha;
+  int number_of_labels = read_MNIST_labels(Y);
 
   int number_of_images = read_MNIST_images(X);
   int outputs_number = 10;
@@ -194,7 +215,7 @@ int main() {
     J_theta = back_propagation(X, A, H, Y, weigth, weigth_2, number_of_images, J_theta);
     cout << i << endl;
   }
-
+  return 0;
   cout << "INPUT TEST" << endl;
 
   mat test_input;
@@ -209,6 +230,9 @@ int main() {
   //cout << test_input << endl;
 
   vector<mat> salida = forward(test_input, weigth, weigth_2);
-  cout << salida[1] <<endl;
+  //cout << salida[1].transform([](double val){ if(val < 0.5) return 0; else return 1;}) <<endl;
+  mat tmp = salida[1].transform([](double val){ if(val < 0.5) return 0; else return 1;});
+  int errors = check_res(tmp, test_outputs);
+  cout<<"errors: "<< errors<<endl;
   return 0;
 }
