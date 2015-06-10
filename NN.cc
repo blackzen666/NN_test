@@ -147,8 +147,7 @@ int read_MNIST_images(mat &data) {
 
     ////matriz definition because of element read
     data = zeros<mat>(num_data, 1);
-
-    for(int counter =0 ; counter < number_of_images ; counter++) {
+    for(int counter =0 ; counter < number_of_images * n_rows*n_cols ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
@@ -158,6 +157,7 @@ int read_MNIST_images(mat &data) {
       }
       counter++;
     }
+    /* AQUIIII
     data.reshape(number_of_images,n_cols*n_rows);
     mat tmp = data.row(0);
     cout<<"sized "<<size(data.row(0))<<endl;
@@ -167,7 +167,16 @@ int read_MNIST_images(mat &data) {
     mat bias = ones<mat>(number_of_images,1);
     data = join_horiz(data,bias);
     //cout << size(data) <<endl;
-    //cout <<"read counter: "<<counter <<endl;
+    //cout <<"read counter: "<<counter <<endl;*/
+
+    //data.print();
+    data.reshape(n_cols*n_rows,number_of_images);
+    mat bias = ones<mat>(1,number_of_images);
+    data = join_vert(data,bias);
+    //cout << size(data) <<endl;
+    data =data.t();
+    //data.print();
+
   }
   return num_data;
 }
