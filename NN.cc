@@ -100,7 +100,7 @@ int read_MNIST_labels(mat &data) {
     cout <<data(1,0)<<endl;
     cout <<data(2,0)<<endl;
     cout <<data(3,0)<<endl;*/
-    cout <<data<<endl;
+    //cout <<data<<endl;
 
       
     cout <<"read counter: "<<counter <<endl;
@@ -139,25 +139,25 @@ int read_MNIST_images(mat &data) {
     unsigned char  cadena;
 
 ////matriz definition because of element read
-    data = zeros<mat>(number_of_images,1);
+    data = zeros<mat>(number_of_images*28*28,1);
 
-    for(int counter =0 ; counter < number_of_images ; counter++) {
+    for(int counter =0 ; counter < number_of_images * n_rows*n_cols ; counter++) {
 
       file.read((char*)&cadena,sizeof(char));
       int pixel= cadena;
       
           //std::cout << pixel << endl;
           data(counter,0)= pixel;
-          cout<< data(counter,0) <<endl;
+          //cout<< data(counter,0) <<endl;
 
     }
-    
+    //data.print();
     data.reshape(n_cols*n_rows,number_of_images);
     mat bias = ones<mat>(1,number_of_images);
     data = join_vert(data,bias);
     //cout << size(data) <<endl;
-    data.t();
-    data.print();
+    data =data.t();
+    //data.print();
 
       
     cout <<"read counter: "<<counter <<endl;
@@ -209,7 +209,7 @@ int main() {
   //cout << test_input << endl;
 
   vector<mat> salida = forward(test_input, weigth, weigth_2);
-  //cout << salida[1] <<endl;
+  cout << salida[1] <<endl;
 
 
   return 0;
