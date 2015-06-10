@@ -25,7 +25,7 @@ int reverseInt (int i) {
 }
 
 
-void read_mnist_data(string path,bool train_images) {
+void read_mnist_data(mat &data,string path,bool train_images) {
   // ifstream file ("t10k-images_unzip");
   
 
@@ -57,7 +57,7 @@ void read_mnist_data(string path,bool train_images) {
     unsigned char  cadena;
 
 ////matriz definition because of element read
-    mat data = zeros<mat>(number_of_images,1);
+    data = zeros<mat>(number_of_images,1);
 
     while(!file.eof()) {
 
@@ -67,21 +67,24 @@ void read_mnist_data(string path,bool train_images) {
       if(counter < number_of_images - 1){
       		//std::cout << pixel << endl;
       		data(counter,0)= pixel;
-      		cout<< data(counter,0) <<endl;
+      		//cout<< data(counter,0) <<endl;
       	}
       counter++;
     }
-    cout <<data(0,0)<<endl;
+    /*cout <<data(0,0)<<endl;
     cout <<data(1,0)<<endl;
     cout <<data(2,0)<<endl;
     cout <<data(3,0)<<endl;
-    cout <<size(data)<<endl;
+    cout <<size(data)<<endl;*/
     if(train_images == true)
     	{
     		data.reshape(n_cols*n_rows, number_of_images);
-    		cout << size(data)<<endl;
+    		mat bias = ones<mat>(1,number_of_images);
+	  		data = join_vert(data,bias);
+	  		cout << size(data) <<endl; 
+    		//cout << size(data)<<endl;
     	}
-    	
+  	 	
     cout <<"read counter: "<<counter <<endl;
 	}
 }
@@ -102,10 +105,15 @@ int main() {
   // read_mnist_data(string path,bool train_images)
   //   http://www.codeproject.com/Questions/601150/HowplustoplusreadpluspixelsplusfromplusMNISTplusdi
 
-
+	mat X;
+	mat Y;
   //read_mnist_data("t10k_unzip",false);
-  read_mnist_data("dataset/t10k-images",true);
-  read_mnist_data("dataset/t10k-labels",false);
+  read_mnist_data(X,"dataset/t10k-images",true);
+  
+  read_mnist_data(Y,"dataset/t10k-labels",false);
+  //cout <<X <<endl;
+  //cout << Y << endl;
+  
 
   /*
      mat A = randu<mat>(5,5) * 100;
